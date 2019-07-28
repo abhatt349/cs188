@@ -540,7 +540,7 @@ def foodHeuristic(state, problem):
     '''
     for food in foodGrid.asList():
         for food1 in foodGrid.asList():
-            dist = mazeDistance(food, food1, problem.startingGameState)
+            dist = mazeDistance(food, food1, problem.startingGameState, dict)
             if dist > maxdist:
                 maxdist = dist
                 maxfood = food
@@ -548,8 +548,8 @@ def foodHeuristic(state, problem):
     if maxfood == (-1,-1):
         if len(foodGrid.asList()) == 0:
             return 0
-        return mazeDistance(pos, foodGrid.asList()[0], problem.startingGameState)
-    return maxdist + min(mazeDistance(pos, maxfood, problem.startingGameState), mazeDistance(pos, maxfood2, problem.startingGameState))
+        return mazeDistance(pos, foodGrid.asList()[0], problem.startingGameState, dict)
+    return maxdist + min(mazeDistance(pos, maxfood, problem.startingGameState, dict), mazeDistance(pos, maxfood2, problem.startingGameState, dict))
     #return ret * (1 + (len(foodGrid.asList()) / (2 * problem.heuristicInfo['totalFood'])))
 
 class ClosestDotSearchAgent(SearchAgent):
@@ -576,12 +576,11 @@ class ClosestDotSearchAgent(SearchAgent):
         """
         # Here are some useful elements of the startState
         startPosition = gameState.getPacmanPosition()
-        food = gameState.getFood()
+        food = gameState.getFood().asList()
+        print(food)
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
-
-        prob = AnyFoodSearchProblem(gameState)
-		return search.astar(prob, manhattanHeuristic)
+        return search.bfs(problem)
         util.raiseNotDefined()
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -602,7 +601,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
     def __init__(self, gameState):
         "Stores information from the gameState.  You don't need to change this."
         # Store the food for later reference
-        self.food = gameState.getFood()
+        self.food = gameState.getFood().asList()
 
         # Store info for the PositionSearchProblem (no need to change this)
         self.walls = gameState.getWalls()
@@ -616,16 +615,16 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         complete the problem definition.
         """
         x,y = state
-		for food in self.food:
-			if (x,y) == food:
-				return True
-		return False
+        for food1 in self.food:
+            if state == food1:
+                return True
+        return False
         util.raiseNotDefined()
 
 
 
 
-def mazeDistance(point1, point2, gameState):
+def mazeDistance(point1, point2, gameState, dict = {}):
     """
     Returns the maze distance between any two points, using the search functions
     you have already built. The gameState can be any game state -- Pacman's
@@ -635,10 +634,14 @@ def mazeDistance(point1, point2, gameState):
 
     This might be a useful helper function for your ApproximateSearchAgent.
     """
+    if (point1, point2) in dict.keys():
+        print("useful")
+        return dict[(point1, point2)]
     x1, y1 = point1
     x2, y2 = point2
     walls = gameState.getWalls()
     assert not walls[x1][y1], 'point1 is a wall: ' + str(point1)
     assert not walls[x2][y2], 'point2 is a wall: ' + str(point2)
     prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
-    return len(search.astar(prob, manhattanHeuristic))
+    dict[(point1, point2)] = len(search.astar(prob, manhattanHeuristic))
+    return dict[(point1, point2)]
