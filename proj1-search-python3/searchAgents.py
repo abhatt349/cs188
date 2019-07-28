@@ -580,7 +580,8 @@ class ClosestDotSearchAgent(SearchAgent):
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
 
-        "*** YOUR CODE HERE ***"
+        prob = AnyFoodSearchProblem(gameState)
+		return search.astar(prob, manhattanHeuristic)
         util.raiseNotDefined()
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -615,8 +616,10 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         complete the problem definition.
         """
         x,y = state
-
-        "*** YOUR CODE HERE ***"
+		for food in self.food:
+			if (x,y) == food:
+				return True
+		return False
         util.raiseNotDefined()
 
 
