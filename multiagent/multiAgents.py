@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -69,12 +69,51 @@ class ReflexAgent(Agent):
         # Useful information you can extract from a GameState (pacman.py)
         successorGameState = currentGameState.generatePacmanSuccessor(action)
         newPos = successorGameState.getPacmanPosition()
-        newFood = successorGameState.getFood()
+        newFood = successorGameState.getFood().asList()
         newGhostStates = successorGameState.getGhostStates()
+        newGhostPositions = successorGameState.getGhostPositions()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        foodDist = 0
+        for food in newFood:
+            foodDist += manhattanDistance(food, newPos)
+        maxDist = 0
+        for food1 in newFood:
+            for food2 in newFood:
+                dist = manhattanDistance(food1, food2)
+                if dist > maxDist:
+                    maxDist = dist
+                    maxFood1 = food1
+                    maxFood2 = food2
+        if len(newFood) > 1:
+            heurDist = maxDist + min(manhattanDistance(maxFood1, newPos), manhattanDistance(maxFood2, newPos))
+        elif len(newFood) > 0:
+            heurDist = manhattanDistance(newFood[0], newPos)
+        else:
+            heurDist = 0
+        ghostDist = 0
+        for ghost in newGhostPositions:
+            ghostDist += manhattanDistance(ghost, newPos)
+        if ghostDist == 0 or ghostDist == 1:
+            return -500
+        ghostDist = .5 / (.8 - ghostDist)
+        #return 0 - foodDist - heurDist
+        minDist = 10000
+        for food in newFood:
+            dist = manhattanDistance(newPos, food)
+            if dist < minDist:
+                minDist = dist
+                minFood = food
+        if len(currentGameState.getFood().asList()) > len(newFood):
+            return 0
+        if len(newFood) > 0:
+            return 0 - minDist
+        else:
+            return 0
+
+
+
 
 def scoreEvaluationFunction(currentGameState):
     """
