@@ -94,9 +94,9 @@ class ReflexAgent(Agent):
             heurDist = 0
         ghostDist = 0
         for ghost in newGhostPositions:
-            ghostDist += manhattanDistance(ghost, newPos)
-        if ghostDist == 0 or ghostDist == 1:
-            return -500
+            ghostDist = manhattanDistance(ghost, newPos)
+            if ghostDist == 0 or ghostDist == 1:
+                return -500
         ghostDist = .5 / (.8 - ghostDist)
         #return 0 - foodDist - heurDist
         minDist = 10000
@@ -108,7 +108,7 @@ class ReflexAgent(Agent):
         if len(currentGameState.getFood().asList()) > len(newFood):
             return 0
         if len(newFood) > 0:
-            return 0 - minDist
+            return 0 - minDist - (foodDist / (len(newFood) * 100))
         else:
             return 0
 
@@ -174,7 +174,17 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
+        depth = self.depth
+
         util.raiseNotDefined()
+
+    def help(self, gameState, layersLeft):
+        if layersLeft==0:
+            return self.evaluationFunction(gameState)
+        max = 0
+        for agentIndex in range(len(gameState.getNumAgents())):
+            
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
