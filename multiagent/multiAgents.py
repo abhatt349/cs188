@@ -182,8 +182,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
         if layersLeft==0:
             return self.evaluationFunction(gameState)
         max = 0
+        states = [gameState]
         for agentIndex in range(len(gameState.getNumAgents())):
-            
+            for i in range(len(states)):
+                states[i] = [states[i].generateSuccessor(agentIndex, action) for action in states[i].getLegalActions(agentIndex)]
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
