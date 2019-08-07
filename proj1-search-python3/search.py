@@ -111,7 +111,6 @@ def depthFirstSearch(problem):
             closed.add(node[0][-1])
             for (child, dir, cost) in problem.getSuccessors(node[0][-1]):
                 fringe.push(noded(node, child, dir))
-
     util.raiseNotDefined()
 
 def breadthFirstSearch(problem):
