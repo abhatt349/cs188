@@ -633,7 +633,7 @@ class Game:
                             self.totalAgentTimes[i] += time_taken
                         except TimeoutFunctionException:
                             print("Agent %d ran out of time on startup!" %
-                                  i, sys.stderr)
+                                  i, file=sys.stderr)
                             self.unmute()
                             self.agentTimeout = True
                             self._agentCrash(i, quiet=True)
@@ -694,7 +694,7 @@ class Game:
                         action = timed_func(observation)
                     except TimeoutFunctionException:
                         print("Agent %d timed out on a single move!" %
-                              agentIndex, sys.stderr)
+                              agentIndex, file=sys.stderr)
                         self.agentTimeout = True
                         self._agentCrash(agentIndex, quiet=True)
                         self.unmute()
@@ -705,10 +705,10 @@ class Game:
                     if move_time > self.rules.getMoveWarningTime(agentIndex):
                         self.totalAgentTimeWarnings[agentIndex] += 1
                         print("Agent %d took too long to make a move! This is warning %d" % (
-                            agentIndex, self.totalAgentTimeWarnings[agentIndex]), sys.stderr)
+                            agentIndex, self.totalAgentTimeWarnings[agentIndex]), file=sys.stderr)
                         if self.totalAgentTimeWarnings[agentIndex] > self.rules.getMaxTimeWarnings(agentIndex):
                             print("Agent %d exceeded the maximum number of warnings: %d" % (
-                                agentIndex, self.totalAgentTimeWarnings[agentIndex]), .stderr)
+                                agentIndex, self.totalAgentTimeWarnings[agentIndex]), file=sys.stderr)
                             self.agentTimeout = True
                             self._agentCrash(agentIndex, quiet=True)
                             self.unmute()
@@ -718,7 +718,7 @@ class Game:
                     # print "Agent: %d, time: %f, total: %f" % (agentIndex, move_time, self.totalAgentTimes[agentIndex])
                     if self.totalAgentTimes[agentIndex] > self.rules.getMaxTotalTime(agentIndex):
                         print("Agent %d ran out of time! (time: %1.2f)" % (
-                            agentIndex, self.totalAgentTimes[agentIndex]), sys.stderr)
+                            agentIndex, self.totalAgentTimes[agentIndex]), file=sys.stderr)
                         self.agentTimeout = True
                         self._agentCrash(agentIndex, quiet=True)
                         self.unmute()
