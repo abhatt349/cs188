@@ -241,6 +241,170 @@ class NodeAB:
         self.agentIndex = agentIndex
         self.actionList = actionList
 
+    def evaluate(self, evaluationFunction, a, b, depth):
+        if self.set:
+            self.set = True
+        elif self.state.isWin() or self.state.isLose() or depth == 0:
+            self.set = True
+            self.value = evaluationFunction(self.state)
+        elif self.agentIndex == 0:
+            self.set = True
+            v = -999999
+            for action in self.state.getLegalActions(self.agentIndex):
+                newList = self.actionList + [action]
+                child = NodeAB(self.state.generateSuccessor(self.agentIndex, action), (self.agentIndex+1) % self.state.getNumAgents(), newList)
+                self.children.append(child)
+                v = max(v, child.evaluate(evaluationFunction, a, b, depth-1))
+                if v > b:
+                    self.value = v
+                    return self.value
+                a = max(a, v)
+                self.value = v
+        else:
+            self.set = True
+            v = 999999
+            for action in self.state.getLegalActions(self.agentIndex):
+                newList = self.actionList + [action]
+                child = NodeAB(self.state.generateSuccessor(self.agentIndex, action), (self.agentIndex+1) % self.state.getNumAgents(), newList)
+                self.children.append(child)
+                v = min(v, child.evaluate(evaluationFunction, a, b, depth-1))
+                if v < a:
+                    self.value = v
+                    return self.value
+                b = min(b, v)
+                self.value = v
+        return self.value
+
+
+    def getAction(self, depth, evaluationFunction):
+        self.evaluate(evaluationFunction, -999999, 999999, depth)
+
+        if len(self.children) == 0:
+            if len(self.state.getLegalActions(self.agentIndex)) == 0:
+                return NULL
+            else:
+                return self.state.getLegalActions(agentIndex)[0]
+
+        maxVal = self.children[0].value
+        maxChild = self.children[0]
+        for child in self.children:
+            if child.value > maxVal:
+                maxVal = child.value
+                maxChild = child
+        return maxChild.actionList[0]
+
+
+class AlphaBetaAgent(MultiAgentSearchAgent):
+    """
+    Your minimax agent with alpha-beta pruning (question 3)
+    """
+
+    def getAction(self, gameState):
+        """
+        Returns the minimax action using self.depth and self.evaluationFunction
+        """
+        "*** YOUR CODE HERE ***"
+
+        depth = self.depth * gameState.getNumAgents()
+        head = NodeAB(gameState, 0, [])
+        return head.getAction(depth, self.evaluationFunction)
+
+        util.raiseNotDefined()
+
+
+class NodeAB:
+    def __init__(self, gameState, agentIndex, actionList):
+        self.children = []
+        self.value = 0
+        self.set = False
+        self.state = gameState
+        self.agentIndex = agentIndex
+        self.actionList = actionList
+
+    def evaluate(self, evaluationFunction, a, b, depth):
+        if self.set:
+            self.set = True
+        elif self.state.isWin() or self.state.isLose() or depth == 0:
+            self.set = True
+            self.value = evaluationFunction(self.state)
+        elif self.agentIndex == 0:
+            self.set = True
+            v = -999999
+            for action in self.state.getLegalActions(self.agentIndex):
+                newList = self.actionList + [action]
+                child = NodeAB(self.state.generateSuccessor(self.agentIndex, action), (self.agentIndex+1) % self.state.getNumAgents(), newList)
+                self.children.append(child)
+                v = max(v, child.evaluate(evaluationFunction, a, b, depth-1))
+                if v > b:
+                    self.value = v
+                    return self.value
+                a = max(a, v)
+                self.value = v
+        else:
+            self.set = True
+            v = 999999
+            for action in self.state.getLegalActions(self.agentIndex):
+                newList = self.actionList + [action]
+                child = NodeAB(self.state.generateSuccessor(self.agentIndex, action), (self.agentIndex+1) % self.state.getNumAgents(), newList)
+                self.children.append(child)
+                v = min(v, child.evaluate(evaluationFunction, a, b, depth-1))
+                if v < a:
+                    self.value = v
+                    return self.value
+                b = min(b, v)
+                self.value = v
+        return self.value
+
+
+    def getAction(self, depth, evaluationFunction):
+        self.evaluate(evaluationFunction, -999999, 999999, depth)
+
+        if len(self.children) == 0:
+            if len(self.state.getLegalActions(self.agentIndex)) == 0:
+                return NULL
+            else:
+                return self.state.getLegalActions(agentIndex)[0]
+
+        maxVal = self.children[0].value
+        maxChild = self.children[0]
+        for child in self.children:
+            if child.value > maxVal:
+                maxVal = child.value
+                maxChild = child
+        return maxChild.actionList[0]
+
+
+
+
+
+class ExpectimaxAgent(MultiAgentSearchAgent):
+    """
+      Your expectimax agent (question 4)
+    """
+
+    def getAction(self, gameState):
+        """
+        Returns the expectimax action using self.depth and self.evaluationFunction
+
+        All ghosts should be modeled as choosing uniformly at random from their
+        legal moves.
+        """
+        "*** YOUR CODE HERE ***"
+        util.raiseNotDefined()
+
+def betterEvaluationFunction(currentGameState):
+    """
+    Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
+    evaluation function (question 5).
+
+    DESCRIPTION: <write something here so we know what you did>
+    """
+    "*** YOUR CODE HERE ***"
+    util.raiseNotDefined()
+
+# Abbreviation
+better = betterEvaluationFunction
+'''
     def populate(self, depth):
         if depth == 0:
             return
@@ -277,82 +441,4 @@ class NodeAB:
                 b = min(b, v)
                 self.value = v
         return self.value
-
-    def evaluate(self, evaluationFunction, a, b, depth):
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    def getAction(self, depth, evaluationFunction):
-        self.populate(depth)
-        self.evaluate(evaluationFunction, -999999, 999999)
-
-        if len(self.children) == 0:
-            if len(self.state.getLegalActions(self.agentIndex)) == 0:
-                return NULL
-            else:
-                return self.state.getLegalActions(agentIndex)[0]
-
-        maxVal = self.children[0].value
-        maxChild = self.children[0]
-        for child in self.children:
-            if child.value > maxVal:
-                maxVal = child.value
-                maxChild = child
-        return maxChild.actionList[0]
-
-
-class AlphaBetaAgent(MultiAgentSearchAgent):
-    """
-    Your minimax agent with alpha-beta pruning (question 3)
-    """
-
-    def getAction(self, gameState):
-        """
-        Returns the minimax action using self.depth and self.evaluationFunction
-        """
-        "*** YOUR CODE HERE ***"
-
-        depth = self.depth * gameState.getNumAgents()
-        head = NodeAB(gameState, 0, [])
-        return head.getAction(depth, self.evaluationFunction)
-
-        util.raiseNotDefined()
-
-class ExpectimaxAgent(MultiAgentSearchAgent):
-    """
-      Your expectimax agent (question 4)
-    """
-
-    def getAction(self, gameState):
-        """
-        Returns the expectimax action using self.depth and self.evaluationFunction
-
-        All ghosts should be modeled as choosing uniformly at random from their
-        legal moves.
-        """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-
-def betterEvaluationFunction(currentGameState):
-    """
-    Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
-    evaluation function (question 5).
-
-    DESCRIPTION: <write something here so we know what you did>
-    """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-
-# Abbreviation
-better = betterEvaluationFunction
+'''
