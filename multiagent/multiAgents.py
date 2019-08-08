@@ -145,6 +145,57 @@ class MultiAgentSearchAgent(Agent):
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
 
+class Node:
+    def __init__(self, gameState, agentIndex, actionList):
+        self.children = []
+        self.value = 0
+        self.set = False
+        self.state = gameState
+        self.agentIndex = agentIndex
+        self.actionList = actionList
+
+    def populate(self, depth):
+        if depth == 0:
+            return
+        for action in self.state.getLegalActions(self.agentIndex):
+            newList = self.actionList + [action]
+            self.children.append(Node(self.state.generateSuccessor(self.agentIndex, action), (self.agentIndex+1) % self.state.getNumAgents(), newList))
+        for child in self.children:
+            child.populate(depth - 1)
+
+    def evaluate(self, evaluationFunction):
+        if self.set:
+            self.set = True
+        elif self.state.isWin() or self.state.isLose() or (len(self.children) == 0):
+            self.set = True
+            self.value = evaluationFunction(self.state)
+        elif self.agentIndex == 0:
+            self.set = True
+            self.value = max([child.evaluate(evaluationFunction) for child in self.children])
+        else:
+            self.set = True
+            self.value = min([child.evaluate(evaluationFunction) for child in self.children])
+        return self.value
+
+    def getAction(self, depth, evaluationFunction):
+        self.populate(depth)
+        self.evaluate(evaluationFunction)
+
+        if len(self.children) == 0:
+            if len(self.state.getLegalActions(self.agentIndex)) == 0:
+                return NULL
+            else:
+                return self.state.getLegalActions(agentIndex)[0]
+
+        maxVal = self.children[0].value
+        maxChild = self.children[0]
+        for child in self.children:
+            if child.value > maxVal:
+                maxVal = child.value
+                maxChild = child
+        return maxChild.actionList[0]
+
+
 class MinimaxAgent(MultiAgentSearchAgent):
     """
     Your minimax agent (question 2)
@@ -174,18 +225,91 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        depth = self.depth
+        depth = self.depth * gameState.getNumAgents()
+        head = Node(gameState, 0, [])
+        return head.getAction(depth, self.evaluationFunction)
 
         util.raiseNotDefined()
 
-    def help(self, gameState, layersLeft):
-        if layersLeft==0:
-            return self.evaluationFunction(gameState)
-        max = 0
-        states = [gameState]
-        for agentIndex in range(len(gameState.getNumAgents())):
-            for i in range(len(states)):
-                states[i] = [states[i].generateSuccessor(agentIndex, action) for action in states[i].getLegalActions(agentIndex)]
+
+class NodeAB:
+    def __init__(self, gameState, agentIndex, actionList):
+        self.children = []
+        self.value = 0
+        self.set = False
+        self.state = gameState
+        self.agentIndex = agentIndex
+        self.actionList = actionList
+
+    def populate(self, depth):
+        if depth == 0:
+            return
+        for action in self.state.getLegalActions(self.agentIndex):
+            newList = self.actionList + [action]
+            self.children.append(NodeAB(self.state.generateSuccessor(self.agentIndex, action), (self.agentIndex+1) % self.state.getNumAgents(), newList))
+        for child in self.children:
+            child.populate(depth - 1)
+
+    def evaluate(self, evaluationFunction, a, b, depth):
+        if self.set:
+            self.set = True
+        elif self.state.isWin() or self.state.isLose() or (len(self.children) == 0):
+            self.set = True
+            self.value = evaluationFunction(self.state)
+        elif self.agentIndex == 0:
+            self.set = True
+            v = -999999
+            for child in self.children:
+                v = max(v, child.evaluate(evaluationFunction, a, b))
+                if v > b:
+                    self.value = v
+                    return self.value
+                a = max(a, v)
+                self.value = v
+        else:
+            self.set = True
+            v = 999999
+            for child in self.children:
+                v = min(v, child.evaluate(evaluationFunction, a, b))
+                if v < a:
+                    self.value = v
+                    return self.value
+                b = min(b, v)
+                self.value = v
+        return self.value
+
+    def evaluate(self, evaluationFunction, a, b, depth):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def getAction(self, depth, evaluationFunction):
+        self.populate(depth)
+        self.evaluate(evaluationFunction, -999999, 999999)
+
+        if len(self.children) == 0:
+            if len(self.state.getLegalActions(self.agentIndex)) == 0:
+                return NULL
+            else:
+                return self.state.getLegalActions(agentIndex)[0]
+
+        maxVal = self.children[0].value
+        maxChild = self.children[0]
+        for child in self.children:
+            if child.value > maxVal:
+                maxVal = child.value
+                maxChild = child
+        return maxChild.actionList[0]
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -198,6 +322,11 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
+
+        depth = self.depth * gameState.getNumAgents()
+        head = NodeAB(gameState, 0, [])
+        return head.getAction(depth, self.evaluationFunction)
+
         util.raiseNotDefined()
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
