@@ -312,7 +312,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         util.raiseNotDefined()
 
 
-class NodeAB:
+class NodeE:
     def __init__(self, gameState, agentIndex, actionList):
         self.children = []
         self.value = 0
@@ -321,7 +321,7 @@ class NodeAB:
         self.agentIndex = agentIndex
         self.actionList = actionList
 
-    def evaluate(self, evaluationFunction, a, b, depth):
+    def evaluate(self, evaluationFunction, depth):
         if self.set:
             self.set = True
         elif self.state.isWin() or self.state.isLose() or depth == 0:
@@ -329,35 +329,26 @@ class NodeAB:
             self.value = evaluationFunction(self.state)
         elif self.agentIndex == 0:
             self.set = True
-            v = -999999
+            self.value = -999999
             for action in self.state.getLegalActions(self.agentIndex):
                 newList = self.actionList + [action]
-                child = NodeAB(self.state.generateSuccessor(self.agentIndex, action), (self.agentIndex+1) % self.state.getNumAgents(), newList)
+                child = NodeE(self.state.generateSuccessor(self.agentIndex, action), (self.agentIndex+1) % self.state.getNumAgents(), newList)
                 self.children.append(child)
-                v = max(v, child.evaluate(evaluationFunction, a, b, depth-1))
-                if v > b:
-                    self.value = v
-                    return self.value
-                a = max(a, v)
-                self.value = v
+                self.value = max(self.value, child.evaluate(evaluationFunction, depth-1))
         else:
             self.set = True
-            v = 999999
+            total = 0
             for action in self.state.getLegalActions(self.agentIndex):
                 newList = self.actionList + [action]
-                child = NodeAB(self.state.generateSuccessor(self.agentIndex, action), (self.agentIndex+1) % self.state.getNumAgents(), newList)
+                child = NodeE(self.state.generateSuccessor(self.agentIndex, action), (self.agentIndex+1) % self.state.getNumAgents(), newList)
                 self.children.append(child)
-                v = min(v, child.evaluate(evaluationFunction, a, b, depth-1))
-                if v < a:
-                    self.value = v
-                    return self.value
-                b = min(b, v)
-                self.value = v
+                total += child.evaluate(evaluationFunction, depth-1)
+            self.value = total / len(self.children)
         return self.value
 
 
     def getAction(self, depth, evaluationFunction):
-        self.evaluate(evaluationFunction, -999999, 999999, depth)
+        self.evaluate(evaluationFunction, depth)
 
         if len(self.children) == 0:
             if len(self.state.getLegalActions(self.agentIndex)) == 0:
@@ -375,8 +366,6 @@ class NodeAB:
 
 
 
-
-
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 4)
@@ -390,6 +379,11 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
+
+        depth = self.depth * gameState.getNumAgents()
+        head = NodeE(gameState, 0, [])
+        return head.getAction(depth, self.evaluationFunction)
+
         util.raiseNotDefined()
 
 def betterEvaluationFunction(currentGameState):
@@ -400,45 +394,55 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
+    pacPos = currentGameState.getPacmanPosition()
+    foodPos = currentGameState.getFood().asList()
+    ghostStates = currentGameState.getGhostStates()
+    ghostPositions = currentGameState.getGhostPositions()
+    scaredTimes = [ghostState.scaredTimer for ghostState in ghostStates]
+
+    if currentGameState.isWin():
+        return 100000
+    if currentGameState.isLose():
+        return -100000
+
+
+    if len(foodPos) == 0:
+        return 0
+
+    minDist = 1000
+    for food in foodPos:
+        dist = manhattanDistance(food, pacPos)
+        if dist < minDist:
+            minDist = dist
+            minFood = food
+    return 0 - 15*len(foodPos) - minDist - 2*random.random()
+
+    return 0 - len(foodPos)
+
+
+
     util.raiseNotDefined()
 
 # Abbreviation
 better = betterEvaluationFunction
-'''
-    def populate(self, depth):
-        if depth == 0:
-            return
-        for action in self.state.getLegalActions(self.agentIndex):
-            newList = self.actionList + [action]
-            self.children.append(NodeAB(self.state.generateSuccessor(self.agentIndex, action), (self.agentIndex+1) % self.state.getNumAgents(), newList))
-        for child in self.children:
-            child.populate(depth - 1)
 
-    def evaluate(self, evaluationFunction, a, b, depth):
-        if self.set:
-            self.set = True
-        elif self.state.isWin() or self.state.isLose() or (len(self.children) == 0):
-            self.set = True
-            self.value = evaluationFunction(self.state)
-        elif self.agentIndex == 0:
-            self.set = True
-            v = -999999
-            for child in self.children:
-                v = max(v, child.evaluate(evaluationFunction, a, b))
-                if v > b:
-                    self.value = v
-                    return self.value
-                a = max(a, v)
-                self.value = v
-        else:
-            self.set = True
-            v = 999999
-            for child in self.children:
-                v = min(v, child.evaluate(evaluationFunction, a, b))
-                if v < a:
-                    self.value = v
-                    return self.value
-                b = min(b, v)
-                self.value = v
-        return self.value
-'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
